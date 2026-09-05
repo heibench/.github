@@ -247,10 +247,27 @@ Two things worth keeping from that exercise, because they generalise:
   computed — there was simply no state in which to say it. That is what a
   missing third outcome costs: not a measurement, a **verdict**.
 
-**A4 — orlab's version fallback may be log-only.** Its `AGENTS.md` states that
-unknown newer OpenRocket versions "fall back to the nearest older profile with a
-warning". Per §3, that fallback is a *could not tell* and must reach the caller
-as a value. **Untested — do not cite this as a defect until someone runs it.**
+**A4 — orlab's version fallback is log-only.** *Reproduced 2026-09-05 against
+`main` @ `b0708f9` — [orlab#61](https://github.com/heibench/orlab/issues/61).*
+`get_profile()` correctly returns `(profile, exact)`, but
+`OpenRocketInstance.__init__` consumes `exact`, logs a warning and discards it.
+No public attribute says whether the instance is on an exact profile or a
+nearest-older fallback.
+
+Two things the reproduction added to the suspicion:
+
+- **The single signal is suppressible.** Setting the root logger to `ERROR` — an
+  ordinary application choice — removes the warning entirely, leaving no
+  exception, no return value and no attribute.
+- **The obvious workaround is wrong.** Comparing `or_version` to
+  `profile.version_string` looks equivalent, but `parse_version` maps
+  `24.12.RC.01` to `(24, 12)` — an *exact* match whose strings differ — so the
+  reconstruction reports a fallback that is not one, on every RC and
+  point-release build.
+
+Recorded here because it is the fourth instance of the core defect and the first
+found in the **drive** layer rather than the verify layer: the same failure
+reaches a caller through a binding exactly as it does through a checker.
 
 **Do not "fix" a member to match this document without an issue and a decision
 entry.** The vocabulary follows the tools; the tools do not silently follow the
