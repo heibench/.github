@@ -1,7 +1,7 @@
-# AGENTS.md — the hardspec agent contract
+# AGENTS.md — the heibench agent contract
 
 The org-wide contract for humans and AI coding agents working in any
-[hardspec](https://github.com/hardspec) repository.
+[heibench](https://github.com/heibench) repository.
 
 Each repository also carries its own `AGENTS.md` with constraints specific to
 it. **Where they conflict, the repository's file wins** — this file is the
@@ -11,23 +11,31 @@ floor, not the ceiling.
 
 ## 1. What this org is
 
-Continuous inspection for hardware design. CI proves the artifact *built*; these
-tools prove it is *what was declared*.
+**Hardware Engineering Integration bench: drive the engine, check the result.**
 
-    partspec     mechanical parts, CAD-as-code   OpenSCAD, OCCT      pre-alpha
-    netspec      PCB connectivity                kicad-cli           pre-alpha
-    gerberdiff   fabrication output              the Gerbers         released
+Two layers, and neither is worth much alone.
 
-A tool belongs here if it (1) takes a **declaration of intent**, (2) adjudicates
-it against an **oracle that owns the truth** rather than reimplementing that
-oracle's arithmetic, and (3) **never lets *couldn't tell* exit `0`**.
+    DRIVE     put an engineering engine under program control
+              headless, scriptable, version-aware, deterministic
 
-Deliberately out of scope, and named so nobody drifts into them: design entry
-and authoring, design *review*, and dependency management. **These tools read;
-they do not write your design.**
+    VERIFY    adjudicate what it produced against declared intent
 
-Each tool is independent. There is no shared runtime and no framework. If you
-find yourself building one, see §9 — that is an escalation, not a refactor.
+A tool belongs here if **both** hold:
+
+1. It puts an engineering engine or artifact under **program control** — no
+   human in the loop.
+2. It is **honest about what it established** — a structured result, a
+   meaningful exit code, never reporting success it did not verify, never
+   substituting a plausible result for a real one.
+
+**Out of scope, deliberately:** authoring and design generation, language
+runtimes, slicer post-processing, dependency management, and machine control at
+runtime (that is [Anolis](https://github.com/anolishq)). heibench is the
+design-time middle.
+
+Some member repositories are private. **Do not name a private repository, link
+it, or describe its internals in anything public** — issues on other projects,
+upstream reports, commit messages, published docs.
 
 ---
 
@@ -38,13 +46,18 @@ find yourself building one, see §9 — that is an escalation, not a refactor.
 A check that could not run, could not reach its evidence, or could not decide
 must never be reportable as one that looked and found nothing.
 
-This is not a style preference. It is the property these tools exist to have,
-and every clause below is a way it has already been violated in this codebase.
+**This is the enabling condition, not a quality preference.** A person catches a
+bad render by glancing at it; a script does not glance, and neither does an
+agent. Strip out the human who would have noticed, and the tool's own honesty
+is the only thing left holding the result up. That is the whole reason this org
+can exist at all — so it is the first rule, and it binds drivers as hard as it
+binds checkers. A driver that swallows an engine error and returns a truncated
+artifact poisons the loop upstream of every check that would have caught it.
 
 **How often it is violated is the point.** As of 2026-09-05 this exact defect —
-a tool with no state for *could not tell*, defaulting to green or to a wrong
-verdict — has been found three times, in three unrelated artifact domains,
-written at three different times by the same author:
+no state for *could not tell*, defaulting to green or to a wrong verdict — has
+been found three times, in three unrelated artifact domains, written at three
+different times by the same author:
 [gerberdiff#17](https://github.com/CameronBrooks11/gerberdiff/issues/17)
 (a dropped Gerber flash reported as no change, exit `0`), A2 below (netspec
 reports *could not evaluate* as *the board is wrong*), and, outside this org, a
@@ -62,15 +75,18 @@ partspec maps `Verdict.INCOMPLETE` to exit `2` for exactly this
 `{identical: 0, different: 1, indeterminate: 2}` — because for a differ, too,
 silence must never read as *no difference*.
 
+For a **driver** the same rule reads: a call that did not do the thing must not
+return as though it did. Establish the artifact exists before saying so.
+
 **Do not add an `--allow-incomplete`-style escape hatch** without a recorded
-case where "could not tell" is a design's genuine long-term state. Shipping the
-escape hatch alongside the discipline means the discipline is never tested.
+case where "could not tell" is a genuine long-term state. Shipping the escape
+hatch alongside the discipline means the discipline is never tested.
 
 ### 2.2 An environment fault is not a verdict on the design
 
 No engine on `PATH`, an engine that will not start, a source file that is not
 there — none of these are statements about the part or the board. A run on a
-machine without the oracle installed must never report a design as disproven.
+machine without the engine installed must never report a design as disproven.
 
 Carry it **as a field a consumer can branch on**, not as prose in a message, and
 give it its own exit code. netspec calls this "the most valuable thing taken
@@ -83,18 +99,15 @@ reconstruct, or approximate your way to a result. A triangle mesh has no
 cylindrical face, and inventing one produces confident wrong numbers **in the
 unsafe direction**.
 
-Two corollaries, both learned the hard way in partspec:
-
 - **Check the precondition before measuring, and make it narrow.** Volume and
   centre of mass need a closed, consistently-wound surface. Every one of those
-  quantities returned a confident wrong number on an open mesh until
-  2026-08-05. Equally, do not refuse *more* than the mathematics requires — an
-  unnecessary `unsupported` is also a way of failing to answer an answerable
-  question.
+  returned a confident wrong number on an open mesh until 2026-08-05. Equally,
+  do not refuse *more* than the mathematics requires — an unnecessary
+  `unsupported` is also a way of failing to answer an answerable question.
 - **Never read an absolute measurement out of a library that rebuilds its
   input.** manifold3d retriangulated 55 of 10,688 triangles on a *clean* part
-  and moved its volume by 0.078%. That number describes its reconstruction, not
-  the artifact you exported. And when such a library reports an error status,
+  and moved its volume by 0.078%. That describes its reconstruction, not the
+  artifact you exported. And when such a library reports an error status,
   believe it — manifold3d's rejected objects still answer `.decompose()` and
   `.genus()`.
 
@@ -105,34 +118,42 @@ you have not personally observed is not a check.
 
 **A skipped test is not a passing test.** partspec's suite once reported
 195 passed / 23 skipped in CI because no runner had OpenSCAD — and those 23 were
-the entire end-to-end path. If you add a `skipif` for a missing tool, add the
-tool to the suite's require-engines handling so CI cannot lose it silently. Never
-gate a test module at import: that reports as *one* skipped line and takes every
-test in the file with it, including the ones needing nothing.
+the entire end-to-end path. Never gate a test module at import: that reports as
+*one* skipped line and takes every test in the file with it.
 
 ### 2.5 Status claims are part of the gate
 
 The "Status:" lines in a `README.md` and an `AGENTS.md` say what does and does
 not work. partspec's asserted its backends were unimplemented for three phases
-after they shipped — in a project whose entire point is that a tool must not
-claim more than it has established. Treat them as code: if your change makes one
-false, the change is not finished.
+after they shipped. Treat them as code: if your change makes one false, the
+change is not finished.
 
 ---
 
-## 3. The oracle boundary
+## 3. The engine boundary
 
-**The domain engine leaks in through exactly one module.** netspec confines
-KiCad to `oracle/` — no `kicad-cli` string and no `subprocess` import anywhere
-else (`docs/DECISIONS.md` D4) — and that boundary *is* its migration plan for the
-next KiCad major.
+**The engine leaks in through exactly one module.** netspec confines KiCad to
+`oracle/` — no `kicad-cli` string and no `subprocess` import anywhere else
+(`docs/DECISIONS.md` D4) — and that boundary *is* its migration plan for the
+next KiCad major. orlab reached the same design independently: never hardcode a
+package root, detect the jar version before starting the JVM, keep per-version
+facts in `profiles/`.
 
-Do not reimplement the oracle's arithmetic. The entire premise is that the
-engine knows what the design is and we do not.
+**Engines move under you, and their own documentation lies about it.** Plan only
+against facts verified in the engine's source or binary, and re-verify them on a
+schedule — netspec counts `registerHandler<>` calls in KiCad `master` and pins
+what it relies on in a test, because the roadmap wiki is stale (D6). orlab
+detects 24.12's `net.sf.openrocket` → `info.openrocket.core` rename rather than
+assuming either.
 
-Prefer a stable process boundary over an in-process binding that upstream may
-delete. netspec never imports `pcbnew` because it is already gone in KiCad
-master (D3).
+**Do not reimplement the engine's arithmetic.** The entire premise is that the
+engine knows what the design is and we do not. Prefer a stable process boundary
+over an in-process binding upstream may delete — netspec never imports `pcbnew`
+because it is already gone in KiCad master (D3).
+
+**Degrading to an older profile is a "could not tell", not a success.** Where a
+driver falls back because it does not recognise a version, that fact must reach
+the caller as a value, not only a log line. See A4.
 
 ---
 
@@ -147,33 +168,35 @@ is code, and running a check executes it.**
 
 ---
 
-## 5. The stable surface is the report and the exit code
+## 5. The stable surface is the artifact and the exit code
 
 Not the Python API. Every tool here is pre-1.0 and its internals will move.
 Consumers — CI, agents, MCP clients — depend on the artifact schema plus the
 process exit code, and those two change with a documented decision or not at all.
 
-Corollary: an agent-facing MCP server is an *optional extra* over the CLI, and
-its verbs are stateless — each call runs the tool and returns its artifact. It
-never becomes a second, weaker interface with its own semantics.
+For a driver the equivalent surface is **what the call returns and what it
+guarantees about the engine's output**. Returning `None` and relying on "it did
+not raise" is not a surface; the caller cannot branch on it.
+
+An agent-facing MCP server is an *optional extra* over the CLI, and its verbs
+are stateless — each call runs the tool and returns its artifact. It never
+becomes a second, weaker interface with its own semantics.
 
 ---
 
-## 6. The shared vocabulary — and where members currently disagree
+## 6. Shared vocabulary — and where members disagree
 
 ### 6.1 Statuses (per check)
 
-Common core, in all members that adjudicate: **`pass` · `fail` · `unsupported` ·
-`skipped`**. Only `pass` is green.
+Common core, in every member that adjudicates: **`pass` · `fail` ·
+`unsupported` · `skipped`**. Only `pass` is green.
 
 `approximate` is a **domain-gated extension**, for when a measured error
-interval straddles the threshold. partspec has it. netspec deliberately does
-**not**: connectivity is discrete, so the status would be unreachable, and
-importing interval epistemics into an exact domain adds concepts without adding
-truth (D9, guarded by `test_report_carries_no_tolerance`).
-
-**Add `approximate` only if your domain has real error intervals.** Absence is a
-decision to record, not an omission to fix.
+interval straddles the threshold. partspec has it; netspec deliberately does
+not, because connectivity is discrete and importing interval epistemics into an
+exact domain adds concepts without adding truth (D9, guarded by
+`test_report_carries_no_tolerance`). **Absence is a decision to record, not an
+omission to fix.**
 
 ### 6.2 Exit codes
 
@@ -185,53 +208,49 @@ Agreed across partspec and netspec today:
 
 ### 6.3 Open adjudications
 
-These are **real conflicts between shipped members**, found while writing this
-document. They are recorded rather than resolved, because resolving them changes
-released behaviour and that is a decision with an owner.
+Real conflicts between shipped members, recorded rather than resolved, because
+resolving them changes released behaviour and that is a decision with an owner.
 
-**A1 — exit code `2` means two different things.**
-partspec: `incomplete` (`status.py`), with usage errors at `64` (`EX_USAGE`).
-netspec: `EXIT_USAGE` (`cli.py:29`), with no code for "could not evaluate".
-A consumer branching on `2` across both tools is reading two different facts.
-*Recommendation:* adopt partspec's split — `2` = could-not-tell, `64` = usage —
-since `2` is the code the family's core rule needs most.
+**A1 — exit code `2` means two different things.** partspec: `incomplete`
+(`status.py`), usage at `64` (`EX_USAGE`). netspec: `EXIT_USAGE` (`cli.py:29`),
+with no code for "could not evaluate". A consumer branching on `2` across both
+tools is reading two different facts. *Recommendation:* adopt partspec's split.
 
 **A2 — netspec cannot report "could not tell" at the verdict level.**
-`Verdict = Literal["pass", "fail"]` (`check.py:28`), and verdict is green only
-when every rule is green — so an `unsupported` rule collapses into `fail`, which
-says the board is wrong when the truth is that the tool could not check it. D10
-also documents a `verdict: "error"` that the type does not contain; the
-environment fault is carried by the exit code (`EXIT_ENVIRONMENT`, `cli.py:30`)
-and not, as D10 requires, by a field in the report.
-*Status: read from source, not reproduced.*
+`Verdict = Literal["pass", "fail"]` (`check.py:28`), green only when every rule
+is green — so an `unsupported` rule collapses into `fail`, saying the board is
+wrong when the truth is the tool could not check it. D10 also documents a
+`verdict: "error"` the type does not contain; the environment fault rides on the
+exit code, not on a report field as D10 requires. *Read from source, not
+reproduced.*
 
-**A3 — gerberdiff has no third state, and one path exploits it.**
-Its report summary carries `has_changes: boolean` (`docs/schema.md`) and layer
-status is `matched | added | removed`. There is no value for *could not tell*.
+**A3 — gerberdiff has no third state.** `has_changes: boolean`
+(`docs/schema.md`), layer status `matched | added | removed`. *Reproduced
+2026-09-05, v0.29.1 —
+[gerberdiff#17](https://github.com/CameronBrooks11/gerberdiff/issues/17).* A
+flash selecting an undefined aperture is dropped with **no diagnostic of any
+severity**; `diff` and `geomdiff` report `0 changes` at exit `0` under
+`--fail-on-diff`, and the JSON is byte-identical to diffing a board against a
+copy of itself.
 
-*Status: **reproduced**, 2026-09-05, v0.29.1 — [gerberdiff#17](https://github.com/CameronBrooks11/gerberdiff/issues/17).*
-A flash whose D-code selects an aperture that was never defined is dropped with
-**no diagnostic of any severity**; `diff` and `geomdiff` then report `0 changes`
-at exit `0` under `--fail-on-diff`, with zero bytes on stderr, and the JSON
-report is byte-identical to diffing a board against an exact copy of itself.
-
-Two things this exercise is worth recording, because they are the general
-lesson and not a fact about Gerbers:
+Two things worth keeping from that exercise, because they generalise:
 
 - **The first reading was wrong.** The hypothesis under review was that
-  *warning*-level diagnostics leaked a silent pass, and that the missing `Error`
-  branch in the diff commands' `_on_diagnostic` was the hole. Neither holds:
-  both engines promote any `Error` diagnostic to a raised `GerberParseError`
-  (`geometry/driver.py:105`, `diff/diff_engine.py:185`) and exit `2`, and the
-  missing branch is unreachable. The real defect was one the reading had not
-  considered — an aperture reference that produces no diagnostic at all. **The
-  repro did not confirm the analysis; it replaced it.** This is why §7 says
-  reproduce before reporting.
+  *warning*-level diagnostics leaked a silent pass. Both engines promote any
+  `Error` diagnostic to a raised `GerberParseError` (`geometry/driver.py:105`,
+  `diff/diff_engine.py:185`) and exit `2`; the real defect was one the reading
+  had not considered. **The repro did not confirm the analysis; it replaced
+  it.**
 - **The tool already held the evidence.** `gerberdiff parse` prints
   `nets: 2, apertures: 1` and a bounding box reaching the dropped pad's *centre*
-  rather than its edge. Nothing had to be measured that the tool was not already
-  computing — it simply had no state in which to say it. That is what a missing
-  third outcome costs: not a lost measurement, a lost *verdict*.
+  rather than its edge. Nothing had to be measured that was not already being
+  computed — there was simply no state in which to say it. That is what a
+  missing third outcome costs: not a measurement, a **verdict**.
+
+**A4 — orlab's version fallback may be log-only.** Its `AGENTS.md` states that
+unknown newer OpenRocket versions "fall back to the nearest older profile with a
+warning". Per §3, that fallback is a *could not tell* and must reach the caller
+as a value. **Untested — do not cite this as a defect until someone runs it.**
 
 **Do not "fix" a member to match this document without an issue and a decision
 entry.** The vocabulary follows the tools; the tools do not silently follow the
@@ -242,22 +261,25 @@ vocabulary.
 ## 7. Evidence
 
 **Reproduce before reporting.** Inferring a failure mode from reading code is a
-guess, and a wrong guess sends the fix in the wrong direction — or hides that the
-real behaviour is worse than the one described. Where this document states a
-finding it has not reproduced, it says so; do the same.
+guess, and a wrong guess sends the fix in the wrong direction — or hides that
+the real behaviour is worse. Where this document states a finding it has not
+reproduced, it says so. Do the same.
 
 **Never state a number you did not produce.** A figure that reaches a spec, a
 README, a commit message or an issue carries the command that produced it. An
 estimate is fine when labelled as one and misleading when presented as a
 measurement.
 
-**Verify against the tool, not its roadmap.** netspec plans only against KiCad
-facts confirmed in `master` and re-verified weekly in CI, because the roadmap
-wiki is stale (D6). Upstream documentation describes intentions; upstream source
-describes behaviour.
+**Verify against the tool, not its roadmap.** Upstream documentation describes
+intentions; upstream source describes behaviour.
+
+**Check metadata before you build on it.** A repository's description, language
+and topics are not what it is. This org's own founding survey characterised a
+fork as the author's work and put a decision to the user on that basis. Open the
+thing.
 
 **Decisions live in each repo's `docs/DECISIONS.md`, numbered, with the
-reasoning that produced them.** Do not relitigate a numbered decision. If it is
+reasoning that produced them.** Do not relitigate a numbered decision; if it is
 wrong, add a superseding entry.
 
 ---
@@ -276,23 +298,26 @@ no session URL in a commit message or PR body.
 Where a repository's specs are normative, the code implements them: if code and
 spec disagree, that is a bug in one of them. Say which. Do not silently pick.
 
-**Do not write a test that reads a doc, reads the code, and diffs them.** That is
-two copies of one fact with a failure report attached — generate the doc instead.
-Equally, do not assert that a phrase appears in prose: `assert "five classes" in
-README` passes when the README says "five classes in 2019, all of which failed".
-A doc test must assert something **executable** — the example builds, the command
-runs.
+**Do not write a test that reads a doc, reads the code, and diffs them** — that
+is two copies of one fact with a failure report attached; generate the doc
+instead. Equally, do not assert that a phrase appears in prose: `assert "five
+classes" in README` passes when the README says "five classes in 2019, all of
+which failed". A doc test must assert something **executable**.
 
 ---
 
 ## 9. Licensing
 
-Apache-2.0 across every repository in this org, matching all three members as
-they stand.
+**Per repository, and often not a free choice.** A driver's licence is
+frequently constrained by the engine it binds to, and that constraint wins.
 
-Fixtures that are meant to be vendored into a third-party implementation may be
-released more permissively per directory, but only with a decision entry saying
-why.
+    partspec, netspec, gerberdiff     Apache-2.0
+    orlab                             GPL-2.0 (follows OpenRocket)
+
+Pick Apache-2.0 where the binding leaves the choice open; take what the engine
+compels where it does not, and record which case applies in the repo's
+`DECISIONS.md`. **There is no org-wide default to apply blindly** — an earlier
+draft of this file claimed Apache-2.0 across the org, which was already false.
 
 ---
 
@@ -304,8 +329,9 @@ Stop and ask rather than proceeding, for:
 - changing a report schema or an exit code in a released tool
 - extracting shared code into a common library or framework across members
 - adding a runtime dependency to a tool whose core is dependency-free by design
+- naming or describing a private repository anywhere public
 - deleting data, force-pushing, or rewriting published history
-- publishing anything that names a private individual or private infrastructure
+- transferring a repository, renaming the org, or changing org settings
 
 Everything else: decide, record the reasoning where the next agent will find it,
 and keep moving.

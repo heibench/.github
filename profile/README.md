@@ -1,56 +1,70 @@
-# hardspec
+# heibench
 
-**Continuous inspection for hardware design.**
+**Hardware Engineering Integration bench.**
 
-CI proves the artifact *built*. These tools prove it is *what you declared*.
+*Drive the engine. Check the result.*
 
-A hardware design is edited for months by people and, increasingly, by agents.
-Every tool that edits one reports on its own arithmetic. Only the domain's own
-engine knows what the design actually **is** — so ask it, after every change,
-and fail loudly when intent and reality diverge.
+Engineering engines — OpenRocket, PrusaSlicer, KiCad, OpenSCAD, OCCT — are built
+for a person sitting at a GUI. Two things follow, and the second is the one that
+bites.
 
-## The tools
+A program cannot drive them well. Every one has a CLI or a binding, and every one
+of those is version-skewed, undocumented in places, and shaped around a human
+who will notice when something looks wrong.
 
-| | domain | oracle | status |
-|---|---|---|---|
-| **[partspec](https://github.com/CameronBrooks11/partspec)** | mechanical parts, CAD-as-code | OpenSCAD, OCCT (build123d / CadQuery) | pre-alpha, `pip install partspec` |
-| **[netspec](https://github.com/CameronBrooks11/netspec)** | PCB connectivity | `kicad-cli` | pre-alpha, `pip install kicad-netspec` |
-| **[gerberdiff](https://github.com/CameronBrooks11/gerberdiff)** | fabrication output (Gerber / Excellon) | the fabrication files themselves | `pip install gerberdiff` |
+**And a program cannot look at the result.** You catch a bad render by glancing
+at it. A script does not glance. Neither does an agent. So a tool that returns a
+plausible-looking artifact and says nothing is not merely unhelpful — it is
+indistinguishable from a tool that worked, and everything downstream inherits
+the mistake.
 
-Each is independent. There is no shared runtime, no framework, and nothing to
-adopt in order to use one of them.
+heibench does those two things and nothing else: it puts engineering engines
+under program control, and it adjudicates what they produce against declared
+intent.
 
-*The repositories are moving into this org; the links above point at their
-current homes and will keep working either way.*
+## The two layers
 
-## The one idea
+**Drive** — put the engine under program control: headless, scriptable,
+version-aware, deterministic.
 
-> **Silence must never read as success.**
+| | engine |
+|---|---|
+| **[orlab](https://github.com/CameronBrooks11/orlab)** | OpenRocket, via JPype — load `.ork`, run simulations, extract time series and flight events |
 
-A check that could not run, could not reach its evidence, or could not decide
-must never be reportable as one that looked and found nothing. So every tool
-here answers in at least three states — *satisfied*, *violated*, and **could not
-tell** — and the third one never exits `0`.
+**Verify** — adjudicate an artifact against declared intent.
 
-That sounds obvious. It is the single most-violated property in verification
-tooling, including in the tools here, which is why it is written down.
+| | domain | oracle |
+|---|---|---|
+| **[partspec](https://github.com/CameronBrooks11/partspec)** | mechanical parts, CAD-as-code | OpenSCAD, OCCT (build123d / CadQuery) |
+| **[netspec](https://github.com/CameronBrooks11/netspec)** | PCB connectivity | `kicad-cli` |
+| **[gerberdiff](https://github.com/CameronBrooks11/gerberdiff)** | fabrication output (Gerber / Excellon) | the fabrication files themselves |
 
-The corollary matters just as much: **an environment fault is not a verdict on
-the design.** No engine on `PATH`, a solver that will not start, a file that is
-not there — none of those are statements about your board or your part. A CI run
-on a machine missing KiCad must never report a design as disproven.
+Further drivers are in progress and not yet public. Each tool is independent —
+no shared runtime, no framework, nothing to adopt in order to use one.
+
+*The repositories are moving into this org; links point at their current homes
+and keep working either way.*
 
 ## What belongs here
 
-A tool belongs in hardspec if it:
+A tool belongs if **both** hold:
 
-1. takes a **declaration of intent** — what the design is supposed to be;
-2. adjudicates it against an **oracle that owns the truth**, rather than
-   reimplementing that oracle's arithmetic; and
-3. **never lets *couldn't tell* exit `0`**.
+1. It puts an engineering engine or artifact under **program control** —
+   headless, scriptable, deterministic, no human in the loop.
+2. It is **honest about what it established** — a structured result, a
+   meaningful exit code, never reporting success it did not verify and never
+   substituting a plausible result for a real one.
 
-Deliberately out of scope: authoring and design entry, design *review*, and
-dependency management. These tools read; they do not write your design.
+The second is not a quality preference. It is the condition that makes the first
+worth anything, and it is violated constantly — including three times, in three
+unrelated domains, in this author's own code. See
+[AGENTS.md](https://github.com/heibench/.github/blob/main/AGENTS.md) §2.
 
-The org-wide contract for humans and agents working in these repositories is
-[AGENTS.md](https://github.com/hardspec/.github/blob/main/AGENTS.md).
+## What does not
+
+Authoring and design generation, language runtimes, slicer post-processing,
+dependency management, and machine control at runtime — the last of which is
+[Anolis](https://github.com/anolishq)'s job, not this org's.
+
+heibench is the design-time middle: **operate the tool, and know whether to
+believe the output.**
