@@ -41,6 +41,18 @@ must never be reportable as one that looked and found nothing.
 This is not a style preference. It is the property these tools exist to have,
 and every clause below is a way it has already been violated in this codebase.
 
+**How often it is violated is the point.** As of 2026-09-05 this exact defect —
+a tool with no state for *could not tell*, defaulting to green or to a wrong
+verdict — has been found three times, in three unrelated artifact domains,
+written at three different times by the same author:
+[gerberdiff#17](https://github.com/CameronBrooks11/gerberdiff/issues/17)
+(a dropped Gerber flash reported as no change, exit `0`), A2 below (netspec
+reports *could not evaluate* as *the board is wrong*), and, outside this org, a
+G-code validator that reports `OK` at exit `0` when the feature it verifies was
+never installed
+([prusaslicer-first-layer-flow#1](https://github.com/CameronBrooks11/prusaslicer-first-layer-flow/issues/1)).
+Nobody set out to build any of them that way. Assume you are doing it too.
+
 ### 2.1 Three outcomes minimum, and the third is not optional
 
 *Satisfied*, *violated*, and **could not tell**. The third never exits `0`.
