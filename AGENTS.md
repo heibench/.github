@@ -55,15 +55,23 @@ binds checkers. A driver that swallows an engine error and returns a truncated
 artifact poisons the loop upstream of every check that would have caught it.
 
 **How often it is violated is the point.** As of 2026-09-05 this exact defect —
-no state for *could not tell*, defaulting to green or to a wrong verdict — has
-been found three times, in three unrelated artifact domains, written at three
-different times by the same author:
-[gerberdiff#17](https://github.com/CameronBrooks11/gerberdiff/issues/17)
-(a dropped Gerber flash reported as no change, exit `0`), A2 below (netspec
-reports *could not evaluate* as *the board is wrong*), and, outside this org, a
-G-code validator that reports `OK` at exit `0` when the feature it verifies was
-never installed
-([prusaslicer-first-layer-flow#1](https://github.com/CameronBrooks11/prusaslicer-first-layer-flow/issues/1)).
+no state for *could not tell*, defaulting to green, to a wrong verdict, or to a
+signal the caller cannot read — has been found **four times**, in four unrelated
+domains, written at four different times by the same author:
+
+- [gerberdiff#17](https://github.com/heibench/gerberdiff/issues/17) — a dropped
+  Gerber flash reported as no change, exit `0`, report byte-identical to a
+  genuinely unchanged board.
+- **A2** below — netspec reports *could not evaluate* as *the board is wrong*.
+- [orlab#61](https://github.com/heibench/orlab/issues/61) — **A4** below, and the
+  first found in the **drive** layer: a version fallback that reaches the caller
+  only as a suppressible log line.
+- Outside this org, a G-code validator that reports `OK` at exit `0` when the
+  feature it verifies was never installed
+  ([prusaslicer-first-layer-flow#1](https://github.com/CameronBrooks11/prusaslicer-first-layer-flow/issues/1)).
+
+Three of the four were found by *running* the code after a reading of it had
+concluded something different, twice concluding the wrong mechanism entirely.
 Nobody set out to build any of them that way. Assume you are doing it too.
 
 ### 2.1 Three outcomes minimum, and the third is not optional
