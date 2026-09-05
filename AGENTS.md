@@ -193,13 +193,33 @@ environment fault is carried by the exit code (`EXIT_ENVIRONMENT`, `cli.py:30`)
 and not, as D10 requires, by a field in the report.
 *Status: read from source, not reproduced.*
 
-**A3 — gerberdiff has no third state at all.**
+**A3 — gerberdiff has no third state, and one path exploits it.**
 Its report summary carries `has_changes: boolean` (`docs/schema.md`) and layer
-status is `matched | added | removed`. Warning-level parse diagnostics print to
-stderr and never enter the report or affect the exit code (`cli.py`), and exit
-`2` is overloaded between parse errors and usage errors.
-*Status: read from source, not reproduced. A reproduction is owed before this is
-filed as a defect rather than a design gap.*
+status is `matched | added | removed`. There is no value for *could not tell*.
+
+*Status: **reproduced**, 2026-09-05, v0.29.1 — [gerberdiff#17](https://github.com/CameronBrooks11/gerberdiff/issues/17).*
+A flash whose D-code selects an aperture that was never defined is dropped with
+**no diagnostic of any severity**; `diff` and `geomdiff` then report `0 changes`
+at exit `0` under `--fail-on-diff`, with zero bytes on stderr, and the JSON
+report is byte-identical to diffing a board against an exact copy of itself.
+
+Two things this exercise is worth recording, because they are the general
+lesson and not a fact about Gerbers:
+
+- **The first reading was wrong.** The hypothesis under review was that
+  *warning*-level diagnostics leaked a silent pass, and that the missing `Error`
+  branch in the diff commands' `_on_diagnostic` was the hole. Neither holds:
+  both engines promote any `Error` diagnostic to a raised `GerberParseError`
+  (`geometry/driver.py:105`, `diff/diff_engine.py:185`) and exit `2`, and the
+  missing branch is unreachable. The real defect was one the reading had not
+  considered — an aperture reference that produces no diagnostic at all. **The
+  repro did not confirm the analysis; it replaced it.** This is why §7 says
+  reproduce before reporting.
+- **The tool already held the evidence.** `gerberdiff parse` prints
+  `nets: 2, apertures: 1` and a bounding box reaching the dropped pad's *centre*
+  rather than its edge. Nothing had to be measured that the tool was not already
+  computing — it simply had no state in which to say it. That is what a missing
+  third outcome costs: not a lost measurement, a lost *verdict*.
 
 **Do not "fix" a member to match this document without an issue and a decision
 entry.** The vocabulary follows the tools; the tools do not silently follow the
