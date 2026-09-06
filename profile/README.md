@@ -29,21 +29,19 @@ version-aware, deterministic.
 
 | | engine |
 |---|---|
-| **[orlab](https://github.com/CameronBrooks11/orlab)** | OpenRocket, via JPype — load `.ork`, run simulations, extract time series and flight events |
+| **[orlab](https://github.com/heibench/orlab)** | OpenRocket, via JPype — load `.ork`, run simulations, extract time series and flight events |
+| **[prusaslicer-py](https://github.com/heibench/prusaslicer-py)** | PrusaSlicer, via its CLI — slice a model and get back a verified artifact, on PATH or as a Flatpak |
 
 **Verify** — adjudicate an artifact against declared intent.
 
 | | domain | oracle |
 |---|---|---|
-| **[partspec](https://github.com/CameronBrooks11/partspec)** | mechanical parts, CAD-as-code | OpenSCAD, OCCT (build123d / CadQuery) |
-| **[netspec](https://github.com/CameronBrooks11/netspec)** | PCB connectivity | `kicad-cli` |
-| **[gerberdiff](https://github.com/CameronBrooks11/gerberdiff)** | fabrication output (Gerber / Excellon) | the fabrication files themselves |
+| **[partspec](https://github.com/heibench/partspec)** | mechanical parts, CAD-as-code | OpenSCAD, OCCT (build123d / CadQuery) |
+| **[netspec](https://github.com/heibench/netspec)** | PCB connectivity | `kicad-cli` |
+| **[gerberdiff](https://github.com/heibench/gerberdiff)** | fabrication output (Gerber / Excellon) | the fabrication files themselves |
 
-Further drivers are in progress and not yet public. Each tool is independent —
-no shared runtime, no framework, nothing to adopt in order to use one.
-
-*The repositories are moving into this org; links point at their current homes
-and keep working either way.*
+Each tool is independent — no shared runtime, no framework, nothing to adopt in
+order to use one.
 
 ## What belongs here
 
