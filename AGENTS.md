@@ -55,11 +55,26 @@ artifact poisons the loop upstream of every check that would have caught it.
 
 **How often it is violated is the point.** This exact defect — no state for
 *could not tell*, defaulting to green, to a wrong verdict, or to a signal the
-caller cannot read — has been recorded **ten times as of 2026-09-06**, across
+caller cannot read — has been recorded **eleven times as of 2026-09-06**, across
 five unrelated domains, written at different times by the same author. Nine are
-fixed and one is **accepted** -- measured, bounded, and deliberately not fixed,
-because every channel that could refuse it refuses correct work too. They reach
-callers through drivers exactly as they do through checkers.
+fixed, one is **accepted** -- measured, bounded, and deliberately not fixed,
+because every channel that could refuse it refuses correct work too -- and one is
+open. They reach callers through drivers exactly as they do through checkers.
+
+**What counts, and what only looks like it counts.** The test is whether a caller
+can distinguish the tool's actual epistemic state from a different one. Silence
+reading as *success* is the sharpest form and the one the name is taken from; it
+is not the definition. Case 2 is netspec reporting *could not evaluate* as *the
+board is wrong* — an unsupported rule collapsing into `fail` at exit `1`. That
+fabricates no success and produces a red, and it belongs on the record, because
+§2.1's third outcome had no channel and collapsed into a neighbouring answer.
+
+The useful axis underneath is severity, not inclusion: does the defect **fabricate
+a claim**, or **misroute a true one**? A tool asserting it verified something it
+never ran is worse than one attributing a real failure to the wrong cause. Both
+qualify. Getting this backwards costs a case: prusaslicer-py#33 was first written
+up as *not* an instance on the reasoning that the suite went red, and it is now
+case 11.
 
 **The record is at <https://heibench.com/silence.html>**, which is canonical for
 it: each case with its reproduction, its layer, and its status. Add a case there,
