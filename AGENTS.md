@@ -56,7 +56,7 @@ artifact poisons the loop upstream of every check that would have caught it.
 **How often it is violated is the point.** This exact defect — no state for
 *could not tell*, defaulting to green, to a wrong verdict, or to a signal the
 caller cannot read — has been recorded **nine times as of 2026-09-06**, across
-five unrelated domains, written at different times by the same author. Five are
+five unrelated domains, written at different times by the same author. Four are
 still open, and they reach callers through drivers exactly as they do through
 checkers.
 
@@ -229,9 +229,11 @@ Real conflicts between shipped members are recorded rather than resolved, becaus
 resolving one changes released behaviour and that is a decision with an owner.
 
 **They live at <https://heibench.com/adjudications.html>**, which is canonical for
-them. Open today: exit code `2` means different things in partspec and netspec
-(A1), and netspec cannot report "could not tell" at the verdict level (A2) or
-gerberdiff at all (A3).
+them. Open today: **A3** — gerberdiff has no third state at all, its `has_changes`
+still a `boolean`. A1 and A2 were settled in netspec 0.9.0 (its `docs/DECISIONS.md`
+D26): exit `2` now means *could not tell* in both tools, usage moved to `64`, and
+netspec's verdict is `pass · fail · incomplete · error`. That decision sets the
+vocabulary A3's fix should follow.
 
 **Do not "fix" a member to match that page without an issue and a decision entry.**
 The vocabulary follows the tools; the tools do not silently follow the vocabulary.
