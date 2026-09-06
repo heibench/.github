@@ -57,9 +57,9 @@ A tool belongs if **both** hold:
    substituting a plausible result for a real one.
 
 The second is not a quality preference. It is the condition that makes the first
-worth anything, and it is violated constantly — including three times, in three
-unrelated domains, in this author's own code. See
-[AGENTS.md](https://github.com/heibench/.github/blob/main/AGENTS.md) §2.
+worth anything, and it is violated constantly — including nine recorded times, in
+five unrelated domains, in this author's own code, eight of them still open. The
+record is at [heibench.com/silence.html](https://heibench.com/silence.html).
 
 ## What does not
 
