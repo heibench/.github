@@ -55,10 +55,10 @@ artifact poisons the loop upstream of every check that would have caught it.
 
 **How often it is violated is the point.** This exact defect — no state for
 *could not tell*, defaulting to green, to a wrong verdict, or to a signal the
-caller cannot read — has been recorded **eleven times as of 2026-09-06**, across
+caller cannot read — has been recorded **twelve times as of 2026-09-06**, across
 five unrelated domains, written at different times by the same author. Nine are
 fixed, one is **accepted** -- measured, bounded, and deliberately not fixed,
-because every channel that could refuse it refuses correct work too -- and one is
+because every channel that could refuse it refuses correct work too -- and two are
 open. They reach callers through drivers exactly as they do through checkers.
 
 **What counts, and what only looks like it counts.** The test is whether a caller
@@ -75,6 +75,14 @@ never ran is worse than one attributing a real failure to the wrong cause. Both
 qualify. Getting this backwards costs a case: prusaslicer-py#33 was first written
 up as *not* an instance on the reasoning that the suite went red, and it is now
 case 11.
+
+Case 12 is the other end of the same axis and arrived the same day: prusaslicer-py
+returning a build's startup banner as its version, at exit `0`, from a
+`-> str` with no third outcome to return. It was found by a sibling project's
+four-platform engine matrix, because the Linux build it was written against prints
+no banner. **A defect that needs a second platform to become visible is invisible
+to every member that has one host**, which is the argument for a matrix rather
+than an incident report about one.
 
 **The record is at <https://heibench.com/silence.html>**, which is canonical for
 it: each case with its reproduction, its layer, and its status. Add a case there,
