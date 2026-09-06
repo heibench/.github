@@ -138,6 +138,33 @@ you have not personally observed is not a check.
 the entire end-to-end path. Never gate a test module at import: that reports as
 *one* skipped line and takes every test in the file with it.
 
+**Clear `__pycache__` before you believe the observation.** The break-and-watch
+procedure above has a failure mode that inverts it, and it is invisible while it
+happens:
+
+    find . -name __pycache__ -type d -exec rm -rf {} +
+
+CPython invalidates a `.pyc` by comparing the source's mtime **and size**, with
+mtime truncated to one second. The natural red-state edit is one character —
+flipping a comparison, changing a return value, swapping a constant — which keeps
+the size identical, and a break-run-restore cycle finishes well inside one second.
+The `.pyc` is then reused and **the interpreter runs the previous version of the
+code you just edited**.
+
+Reproduced deterministically: with `return 0` changed to `return 3` and run in the
+same second, the interpreter answered `0` while `inspect.getsource` showed `3`.
+Note the direction — the break was *invisible*, so the observation is a false
+**green**. That is §2.1's silence-reading-as-success landing inside the one
+procedure meant to defend against it: you break a check, it still passes, and the
+honest conclusion from that evidence is the wrong one. `getsource` disagreeing
+with the interpreter is the tell, because `getsource` re-reads the file and the
+interpreter does not.
+
+slicelab reports the mirror case — a false *red* on a restored tree — which is the
+same mechanism with the cache written from the broken source instead. Recorded as
+reported: it was not reproduced here, and the window for it is narrower. Neither
+direction is worth diagnosing in the moment. Clear the cache and measure again.
+
 ### 2.5 Status claims are part of the gate
 
 The "Status:" lines in a `README.md` and an `AGENTS.md` say what does and does
