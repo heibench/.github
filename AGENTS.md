@@ -32,9 +32,9 @@ A tool belongs here if **both** hold:
 runtimes, slicer post-processing, dependency management, and machine control at
 runtime. heibench is the design-time middle.
 
-Some member repositories are private. **Do not name a private repository, link
-it, or describe its internals in anything public** — issues on other projects,
-upstream reports, commit messages, published docs.
+Where a member repository is private, **do not name it, link it, or describe its
+internals in anything public** — issues on other projects, upstream reports,
+commit messages, published docs.
 
 ---
 
@@ -53,23 +53,16 @@ can exist at all — so it is the first rule, and it binds drivers as hard as it
 binds checkers. A driver that swallows an engine error and returns a truncated
 artifact poisons the loop upstream of every check that would have caught it.
 
-**How often it is violated is the point.** As of 2026-09-05 this exact defect —
-no state for *could not tell*, defaulting to green, to a wrong verdict, or to a
-signal the caller cannot read — has been found **four times**, in four unrelated
-domains, written at four different times by the same author:
+**How often it is violated is the point.** This exact defect — no state for
+*could not tell*, defaulting to green, to a wrong verdict, or to a signal the
+caller cannot read — has been recorded **nine times as of 2026-09-05**, across
+five unrelated domains, written at different times by the same author. Eight are
+still open, and they reach callers through drivers exactly as they do through
+checkers.
 
-- [gerberdiff#17](https://github.com/heibench/gerberdiff/issues/17) — a dropped
-  Gerber flash reported as no change, exit `0`, report byte-identical to a
-  genuinely unchanged board.
-- **A2** below — netspec reports *could not evaluate* as *the board is wrong*.
-- [orlab#61](https://github.com/heibench/orlab/issues/61) — **A4** below, and the
-  first found in the **drive** layer: a version fallback that reaches the caller
-  only as a suppressible log line.
-- Outside this org, a G-code validator that reports `OK` at exit `0` when the
-  feature it verifies was never installed
-  ([prusaslicer-first-layer-flow#1](https://github.com/CameronBrooks11/prusaslicer-first-layer-flow/issues/1)).
-
-Three of the four were found by *running* the code after a reading of it had
+**The record is at <https://heibench.com/silence.html>**, which is canonical for
+it: each case with its reproduction, its layer, and its status. Add a case there,
+not here. Most were found by *running* the code after a reading of it had
 concluded something different, twice concluding the wrong mechanism entirely.
 Nobody set out to build any of them that way. Assume you are doing it too.
 
@@ -160,7 +153,8 @@ because it is already gone in KiCad master (D3).
 
 **Degrading to an older profile is a "could not tell", not a success.** Where a
 driver falls back because it does not recognise a version, that fact must reach
-the caller as a value, not only a log line. See A4.
+the caller as a value, not only a log line. orlab exposes `profile_exact` for
+exactly this, and did not at first — <https://heibench.com/silence.html> case 3.
 
 ---
 
@@ -215,70 +209,16 @@ Agreed across partspec and netspec today:
 
 ### 6.3 Open adjudications
 
-Real conflicts between shipped members, recorded rather than resolved, because
-resolving them changes released behaviour and that is a decision with an owner.
+Real conflicts between shipped members are recorded rather than resolved, because
+resolving one changes released behaviour and that is a decision with an owner.
 
-**A1 — exit code `2` means two different things.** partspec: `incomplete`
-(`status.py`), usage at `64` (`EX_USAGE`). netspec: `EXIT_USAGE` (`cli.py:29`),
-with no code for "could not evaluate". A consumer branching on `2` across both
-tools is reading two different facts. *Recommendation:* adopt partspec's split.
+**They live at <https://heibench.com/adjudications.html>**, which is canonical for
+them. Open today: exit code `2` means different things in partspec and netspec
+(A1), and netspec cannot report "could not tell" at the verdict level (A2) or
+gerberdiff at all (A3).
 
-**A2 — netspec cannot report "could not tell" at the verdict level.**
-`Verdict = Literal["pass", "fail"]` (`check.py:28`), green only when every rule
-is green — so an `unsupported` rule collapses into `fail`, saying the board is
-wrong when the truth is the tool could not check it. D10 also documents a
-`verdict: "error"` the type does not contain; the environment fault rides on the
-exit code, not on a report field as D10 requires. *Read from source, not
-reproduced.*
-
-**A3 — gerberdiff has no third state.** `has_changes: boolean`
-(`docs/schema.md`), layer status `matched | added | removed`. *Reproduced
-2026-09-05, v0.29.1 —
-[gerberdiff#17](https://github.com/CameronBrooks11/gerberdiff/issues/17).* A
-flash selecting an undefined aperture is dropped with **no diagnostic of any
-severity**; `diff` and `geomdiff` report `0 changes` at exit `0` under
-`--fail-on-diff`, and the JSON is byte-identical to diffing a board against a
-copy of itself.
-
-Two things worth keeping from that exercise, because they generalise:
-
-- **The first reading was wrong.** The hypothesis under review was that
-  *warning*-level diagnostics leaked a silent pass. Both engines promote any
-  `Error` diagnostic to a raised `GerberParseError` (`geometry/driver.py:105`,
-  `diff/diff_engine.py:185`) and exit `2`; the real defect was one the reading
-  had not considered. **The repro did not confirm the analysis; it replaced
-  it.**
-- **The tool already held the evidence.** `gerberdiff parse` prints
-  `nets: 2, apertures: 1` and a bounding box reaching the dropped pad's *centre*
-  rather than its edge. Nothing had to be measured that was not already being
-  computed — there was simply no state in which to say it. That is what a
-  missing third outcome costs: not a measurement, a **verdict**.
-
-**A4 — orlab's version fallback is log-only.** *Reproduced 2026-09-05 against
-`main` @ `b0708f9` — [orlab#61](https://github.com/heibench/orlab/issues/61).*
-`get_profile()` correctly returns `(profile, exact)`, but
-`OpenRocketInstance.__init__` consumes `exact`, logs a warning and discards it.
-No public attribute says whether the instance is on an exact profile or a
-nearest-older fallback.
-
-Two things the reproduction added to the suspicion:
-
-- **The single signal is suppressible.** Setting the root logger to `ERROR` — an
-  ordinary application choice — removes the warning entirely, leaving no
-  exception, no return value and no attribute.
-- **The obvious workaround is wrong.** Comparing `or_version` to
-  `profile.version_string` looks equivalent, but `parse_version` maps
-  `24.12.RC.01` to `(24, 12)` — an *exact* match whose strings differ — so the
-  reconstruction reports a fallback that is not one, on every RC and
-  point-release build.
-
-Recorded here because it is the fourth instance of the core defect and the first
-found in the **drive** layer rather than the verify layer: the same failure
-reaches a caller through a binding exactly as it does through a checker.
-
-**Do not "fix" a member to match this document without an issue and a decision
-entry.** The vocabulary follows the tools; the tools do not silently follow the
-vocabulary.
+**Do not "fix" a member to match that page without an issue and a decision entry.**
+The vocabulary follows the tools; the tools do not silently follow the vocabulary.
 
 ---
 
