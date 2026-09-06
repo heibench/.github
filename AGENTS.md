@@ -56,9 +56,10 @@ artifact poisons the loop upstream of every check that would have caught it.
 **How often it is violated is the point.** This exact defect — no state for
 *could not tell*, defaulting to green, to a wrong verdict, or to a signal the
 caller cannot read — has been recorded **ten times as of 2026-09-06**, across
-five unrelated domains, written at different times by the same author. Two are
-still open, and they reach callers through drivers exactly as they do through
-checkers.
+five unrelated domains, written at different times by the same author. Nine are
+fixed and one is **accepted** -- measured, bounded, and deliberately not fixed,
+because every channel that could refuse it refuses correct work too. They reach
+callers through drivers exactly as they do through checkers.
 
 **The record is at <https://heibench.com/silence.html>**, which is canonical for
 it: each case with its reproduction, its layer, and its status. Add a case there,
