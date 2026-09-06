@@ -55,8 +55,8 @@ artifact poisons the loop upstream of every check that would have caught it.
 
 **How often it is violated is the point.** This exact defect — no state for
 *could not tell*, defaulting to green, to a wrong verdict, or to a signal the
-caller cannot read — has been recorded **nine times as of 2026-09-05**, across
-five unrelated domains, written at different times by the same author. Eight are
+caller cannot read — has been recorded **nine times as of 2026-09-06**, across
+five unrelated domains, written at different times by the same author. Six are
 still open, and they reach callers through drivers exactly as they do through
 checkers.
 
@@ -65,6 +65,22 @@ it: each case with its reproduction, its layer, and its status. Add a case there
 not here. Most were found by *running* the code after a reading of it had
 concluded something different, twice concluding the wrong mechanism entirely.
 Nobody set out to build any of them that way. Assume you are doing it too.
+
+**When you file an instance, label the issue `silence-defect` and add it to the
+record in the same sitting.** Filing is the only moment when someone reliably
+knows the case exists; the label's description says where it goes. Nothing else
+connects the two, and without it the record went stale twice -- once by five
+cases, and once by two within a single day. The count is the argument, so a
+record that undercounts makes the case weaker than the evidence supports.
+
+That label is also the drift check, and it costs one query:
+
+```
+gh search issues --owner=heibench --label silence-defect
+```
+
+If the label and the record disagree, **the record is wrong**. Per 2.5, that
+makes it a status claim like any other.
 
 ### 2.1 Three outcomes minimum, and the third is not optional
 
