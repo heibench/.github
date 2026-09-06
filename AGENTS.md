@@ -235,6 +235,36 @@ different question; the code and its meaning are the same.
 Settled 2026-09-06 by adjudications A1, A2 and A3. Before that netspec used `2` for
 usage and had no third verdict, and gerberdiff used `2` for a parse error.
 
+**`3` is a domain-gated extension, on §6.1's terms.** partspec and slicelab both
+exit `3` for **`empty`**: the run completed, nothing went wrong, and it verified
+*nothing* — every requested check passed vacuously because none was requested.
+partspec has had it; slicelab adopted the same number for the same idea in D24
+(slicelab#16), deliberately rather than coincidentally. Note what agreed and what
+did not: slicelab is a driver, so its §6.1 words diverge on purpose (`sliced` and
+`refused`, not `pass` and `fail`) while the *code* is shared. The exit map is the
+part §5 makes a stable surface; the vocabulary above it is scoped to members that
+adjudicate, which is why §6.3's count of three is unchanged by this.
+
+`3` is not in the table above because netspec and gerberdiff do not have it, and
+that is a decision rather than a gap. `empty` exists where a run's scope is
+supplied by the file under test, so a file can ask for nothing; netspec's scope
+is the board's netlist, which is not a request the author can leave blank. Adding
+`3` to the common core would say netspec is missing something it chose not to
+have — the same error §6.1 warns about for `approximate`.
+
+The distinction `3` buys over `1` is the one that decided it. `1` asserts *the
+tool established the design is wrong* — slicelab spells it `refused`, partspec
+`fail` — and over zero requested keys nothing was established, so `1` would claim
+a cause the tool never found. `0` would claim a verification that did not happen,
+which is §2.1's silence-reads-as-success in the one place it is hardest to see:
+the run really did succeed, and the file really is the first one anyone writes.
+
+netspec's objection is recorded and is not overruled: a caller that only asks
+"did this verify anything at all" can branch on a report field instead of a code.
+slicelab's D24 carries the supersede condition in those terms — if after 20 real
+files nobody has branched on `3`, it folds into `refused` and this note goes. The
+measurement decides it, not the argument.
+
 ### 6.3 Open adjudications
 
 Real conflicts between shipped members are recorded rather than resolved, because
