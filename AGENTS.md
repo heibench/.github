@@ -56,7 +56,7 @@ artifact poisons the loop upstream of every check that would have caught it.
 **How often it is violated is the point.** This exact defect — no state for
 *could not tell*, defaulting to green, to a wrong verdict, or to a signal the
 caller cannot read — has been recorded **nine times as of 2026-09-06**, across
-five unrelated domains, written at different times by the same author. Six are
+five unrelated domains, written at different times by the same author. Five are
 still open, and they reach callers through drivers exactly as they do through
 checkers.
 
