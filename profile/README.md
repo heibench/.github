@@ -1,3 +1,6 @@
+<img src="https://raw.githubusercontent.com/heibench/.github/main/assets/heibench-mark.png"
+     alt="" width="96" height="96">
+
 # heibench
 
 **Hardware Engineering Integration bench.**
