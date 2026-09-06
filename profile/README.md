@@ -61,8 +61,7 @@ unrelated domains, in this author's own code. See
 ## What does not
 
 Authoring and design generation, language runtimes, slicer post-processing,
-dependency management, and machine control at runtime — the last of which is
-[Anolis](https://github.com/anolishq)'s job, not this org's.
+dependency management, and machine control at runtime are not within the scope of this org.
 
 heibench is the design-time middle: **operate the tool, and know whether to
 believe the output.**
