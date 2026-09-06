@@ -57,7 +57,7 @@ A tool belongs if **both** hold:
    substituting a plausible result for a real one.
 
 The second is not a quality preference. It is the condition that makes the first
-worth anything, and it is violated constantly — including nine recorded times, in
+worth anything, and it is violated constantly — including ten recorded times, in
 five unrelated domains, in this author's own code, four of them still open. The
 record is at [heibench.com/silence.html](https://heibench.com/silence.html).
 

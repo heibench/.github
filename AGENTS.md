@@ -55,7 +55,7 @@ artifact poisons the loop upstream of every check that would have caught it.
 
 **How often it is violated is the point.** This exact defect — no state for
 *could not tell*, defaulting to green, to a wrong verdict, or to a signal the
-caller cannot read — has been recorded **nine times as of 2026-09-06**, across
+caller cannot read — has been recorded **ten times as of 2026-09-06**, across
 five unrelated domains, written at different times by the same author. Four are
 still open, and they reach callers through drivers exactly as they do through
 checkers.
@@ -229,11 +229,15 @@ Real conflicts between shipped members are recorded rather than resolved, becaus
 resolving one changes released behaviour and that is a decision with an owner.
 
 **They live at <https://heibench.com/adjudications.html>**, which is canonical for
-them. Open today: **A3** — gerberdiff has no third state at all, its `has_changes`
-still a `boolean`. A1 and A2 were settled in netspec 0.9.0 (its `docs/DECISIONS.md`
-D26): exit `2` now means *could not tell* in both tools, usage moved to `64`, and
-netspec's verdict is `pass · fail · incomplete · error`. That decision sets the
-vocabulary A3's fix should follow.
+them. **None are open today**, for the first time: A1 and A2 were settled in netspec
+0.9.0 (its `docs/DECISIONS.md` D26) and A3 in gerberdiff `0685cde`. All three
+verification members now answer on the same exit codes — `0` satisfied, `1` violated,
+`2` could not tell, `4` environment fault, `64` usage — and each can say *could not
+tell* in its report, gerberdiff as a third diff outcome rather than a verdict.
+
+That agreement is the point of recording adjudications at all, so treat an empty list
+as a state to defend rather than a task completed: the next member to ship a verb, or
+the next tool to join, is where it drifts.
 
 **Do not "fix" a member to match that page without an issue and a decision entry.**
 The vocabulary follows the tools; the tools do not silently follow the vocabulary.
