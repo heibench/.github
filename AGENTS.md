@@ -217,11 +217,22 @@ omission to fix.**
 
 ### 6.2 Exit codes
 
-Agreed across partspec and netspec today:
+Agreed across partspec, netspec and gerberdiff:
 
-    0    satisfied
-    1    violated
-    4    environment fault / error — not a verdict on the design
+    0    satisfied            no differences, every rule passed
+    1    violated             a finding about the design
+    2    could not tell       the tool could not decide — NOT a finding
+    4    environment fault    could not run or read its input — not a verdict either
+    64   usage                EX_USAGE: bad arguments
+
+**`2` is the one that carries §2.1's third outcome**, and it is why a caller must not
+read "nonzero" as "the design is wrong". `4` and `64` say nothing about the design
+either. gerberdiff spells `2` as a third *diff* outcome — `indeterminate` beside
+`identical` and `different` — rather than as a verdict, because a differ answers a
+different question; the code and its meaning are the same.
+
+Settled 2026-09-06 by adjudications A1, A2 and A3. Before that netspec used `2` for
+usage and had no third verdict, and gerberdiff used `2` for a parse error.
 
 ### 6.3 Open adjudications
 
@@ -298,8 +309,13 @@ which failed". A doc test must assert something **executable**.
 frequently constrained by the engine it binds to, and that constraint wins.
 
     partspec, netspec, gerberdiff     Apache-2.0
+    prusaslicer-py, slicelab          Apache-2.0
     orlab                             GPL-2.0 (follows OpenRocket)
 
+Each driver above reaches its engine across a **process boundary**, which does not
+propagate a licence, so nothing is compelled and the choice is free. `orlab` is the
+exception and the reason this section exists: OpenRocket is reached in-process through
+JPype, and GPL-2.0 follows.
 Pick Apache-2.0 where the binding leaves the choice open; take what the engine
 compels where it does not, and record which case applies in the repo's
 `DECISIONS.md`. **There is no org-wide default to apply blindly** — an earlier
