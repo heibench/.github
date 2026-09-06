@@ -30,8 +30,7 @@ A tool belongs here if **both** hold:
 
 **Out of scope, deliberately:** authoring and design generation, language
 runtimes, slicer post-processing, dependency management, and machine control at
-runtime (that is [Anolis](https://github.com/anolishq)). heibench is the
-design-time middle.
+runtime. heibench is the design-time middle.
 
 Some member repositories are private. **Do not name a private repository, link
 it, or describe its internals in anything public** — issues on other projects,
