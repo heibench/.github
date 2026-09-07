@@ -373,6 +373,41 @@ trailing period, subject ≤ 72 characters. One logical change per commit.
 **No AI attribution anywhere** — no co-author trailer, no generated-with footer,
 no session URL in a commit message or PR body.
 
+### 8.1 One gate, and it must require success
+
+Every member's CI ends in a job named **`ok`** that every other job feeds through
+`needs:`, and branch protection requires exactly that one context. Adding,
+renaming or splitting a job then means editing `needs:` rather than editing
+repository settings, so CI can evolve without a setting drifting out of step with
+it. `.github` and the site have no CI and so require nothing — an absence, not an
+omission.
+
+**How `ok` is written is not a detail, and the obvious spelling has a hole.**
+
+```yaml
+if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+```
+
+does **not** match `'skipped'`. So an `if: false` on a real job — or a
+`continue-on-error: true`, which makes a failed job report success — yields a
+fully green pull request with nothing checked. That is measured, not reasoned:
+it happened in prusaslicer-py, and the `ok` job passed while the typechecker had
+not run.
+
+Which form is correct depends on whether the workflow filters paths:
+
+* **No path filtering** — no job ever skips legitimately, so a skip is always a
+  defect. Require success by name: `needs.<job>.result != 'success'`. Used by
+  prusaslicer-py, gerberdiff, orlab and slicelab.
+* **Path filtering** (`dorny/paths-filter` and a `changes` job) — jobs skip by
+  design on a docs-only change, and blocking those would defeat the filter. The
+  tolerant form is correct, and the residual hole is the price of filtering. Used
+  by partspec and netspec.
+
+Filter with a `changes` job rather than `paths-ignore:` on the trigger: a
+filtered trigger means the workflow does not run at all, so `ok` reports no
+status and the required check never arrives.
+
 Where a repository's specs are normative, the code implements them: if code and
 spec disagree, that is a bug in one of them. Say which. Do not silently pick.
 
