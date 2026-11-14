@@ -28,9 +28,16 @@ A tool belongs here if **both** hold:
    meaningful exit code, never reporting success it did not verify, never
    substituting a plausible result for a real one.
 
-**Out of scope, deliberately:** authoring and design generation, language
+**Out of scope, deliberately:** design generation that no engine checks — a
+language or generator whose output is trusted on its own say-so — language
 runtimes, slicer post-processing, dependency management, and machine control at
 runtime. heibench is the design-time middle.
+
+**Authoring belongs only as a driver.** A tool may write a design when it writes
+through the engine and the engine decides whether the result stands: success is
+the engine's own checks agreeing, never the tool's arithmetic. boardwright is the
+case: it writes KiCad boards and schematics and reports success only when
+KiCad's ERC, DRC and netlist agree.
 
 Where a member repository is private, **do not name it, link it, or describe its
 internals in anything public** — issues on other projects, upstream reports,
@@ -284,6 +291,11 @@ different question; the code and its meaning are the same.
 
 Settled 2026-09-06 by adjudications A1, A2 and A3. Before that netspec used `2` for
 usage and had no third verdict, and gerberdiff used `2` for a parse error.
+
+boardwright, a driver that writes designs, joined on the same five codes
+(2026-11-14). For it `1` reads *refused or violated*: an edit it would not make,
+or a finding about the board; `2` is a check it could not decide, such as a
+verify with KiCad's reports missing.
 
 **`3` is a domain-gated extension, on §6.1's terms.** partspec and slicelab both
 exit `3` for **`empty`**: the run completed, nothing went wrong, and it verified

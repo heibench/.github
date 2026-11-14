@@ -28,12 +28,15 @@ intent.
 ## The two layers
 
 **Drive** — put the engine under program control: headless, scriptable,
-version-aware, deterministic.
+version-aware, deterministic. A driver may write a design, as long as the engine
+judges the result.
 
 | | engine |
 |---|---|
 | **[orlab](https://github.com/heibench/orlab)** | OpenRocket, via JPype — load `.ork`, run simulations, extract time series and flight events |
 | **[prusaslicer-py](https://github.com/heibench/prusaslicer-py)** | PrusaSlicer, via its CLI — slice a model and get back a verified artifact, on PATH or as a Flatpak |
+| **[slicelab](https://github.com/heibench/slicelab)** | PrusaSlicer and OrcaSlicer — declare a small configuration delta, and get back G-code plus a lock recording exactly what the engine resolved. *Pre-alpha: the contract and its decisions, no verb implemented yet.* |
+| **[boardwright](https://github.com/heibench/boardwright)** | KiCad, via `kicad-cli` and its IPC API — generate a board from a short Python description, or edit an existing board or schematic in place, and report success only when KiCad's own ERC, DRC and netlist agree |
 
 **Verify** — adjudicate an artifact against declared intent.
 
@@ -63,8 +66,10 @@ record is at [heibench.com/silence.html](https://heibench.com/silence.html).
 
 ## What does not
 
-Authoring and design generation, language runtimes, slicer post-processing,
-dependency management, and machine control at runtime are not within the scope of this org.
+Design generation that no engine checks, language runtimes, slicer
+post-processing, dependency management, and machine control at runtime are not
+within the scope of this org. Authoring belongs only as a driver: it writes
+through the engine, and the engine decides whether the result stands.
 
 heibench is the design-time middle: **operate the tool, and know whether to
 believe the output.**
