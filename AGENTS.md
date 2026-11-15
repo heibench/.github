@@ -11,27 +11,43 @@ floor, not the ceiling.
 
 ## 1. What this org is
 
-**Hardware Engineering Integration bench: drive the engine, check the result.**
+**Open tools for scientific and technical workflows: drive the engine, check the
+result.**
 
 Two layers, and neither is worth much alone.
 
-    DRIVE     put an engineering engine under program control
+    DRIVE     put an engine under program control
               headless, scriptable, version-aware, deterministic
 
     VERIFY    adjudicate what it produced against declared intent
 
-A tool belongs here if **both** hold:
+An engine is whatever owns the truth about the artifact: a CAD kernel, a slicer,
+KiCad, a reference library (zotgo drives Zotero), a wiki's revision history
+(wikisync drives MediaWiki).
 
-1. It puts an engineering engine or artifact under **program control** — no
-   human in the loop.
+A tool belongs here if **all three** hold:
+
+1. It puts a scientific or technical engine, service or artifact under **program
+   control** — no human in the loop.
 2. It is **honest about what it established** — a structured result, a
    meaningful exit code, never reporting success it did not verify, never
    substituting a plausible result for a real one.
+3. It is **useful beyond one project** — someone who has never seen the work it
+   came from can pick it up and use it.
 
-**Out of scope, deliberately:** design generation that no engine checks — a
-language or generator whose output is trusted on its own say-so — language
-runtimes, slicer post-processing, dependency management, and machine control at
-runtime. heibench is the design-time middle.
+The second is the gate the other two depend on, and widening the first does not
+loosen it.
+
+**Out of scope, deliberately:** generation that no engine checks — a language or
+generator whose output is trusted on its own say-so — language runtimes, slicer
+post-processing, dependency management, machine control at runtime, and anything
+that would make this a framework or a general collection of repositories. Each
+member stays independently usable. heibench is the middle: operate the tool, and
+know whether to believe the output.
+
+**The name.** heibench was founded on 2026-09-05 as the *Hardware Engineering
+Integration bench*. The scope widened on 2026-11-15, with zotgo and wikisync the
+first members outside hardware; the name stayed and the expansion was retired.
 
 **Authoring belongs only as a driver.** A tool may write a design when it writes
 through the engine and the engine decides whether the result stands: success is
@@ -297,6 +313,9 @@ boardwright, a driver that writes designs, joined on the same five codes
 or a finding about the board; `2` is a check it could not decide, such as a
 verify with KiCad's reports missing.
 
+zotgo and wikisync joined on 2026-11-15 on codes of their own, and the difference
+is recorded as adjudications A5 and A6 rather than harmonised on arrival (§6.3).
+
 **`3` is a domain-gated extension, on §6.1's terms.** partspec and slicelab both
 exit `3` for **`empty`**: the run completed, nothing went wrong, and it verified
 *nothing* — every requested check passed vacuously because none was requested.
@@ -333,15 +352,19 @@ Real conflicts between shipped members are recorded rather than resolved, becaus
 resolving one changes released behaviour and that is a decision with an owner.
 
 **They live at <https://heibench.com/adjudications.html>**, which is canonical for
-them. **None are open today**, for the first time: A1 and A2 were settled in netspec
-0.9.0 (its `docs/DECISIONS.md` D26) and A3 in gerberdiff `0685cde`. All three
-verification members now answer on the same exit codes — `0` satisfied, `1` violated,
-`2` could not tell, `4` environment fault, `64` usage — and each can say *could not
-tell* in its report, gerberdiff as a third diff outcome rather than a verdict.
+them. A1 and A2 were settled in netspec 0.9.0 (its `docs/DECISIONS.md` D26) and A3
+in gerberdiff `0685cde`. All three verification members now answer on the same exit
+codes — `0` satisfied, `1` violated, `2` could not tell, `4` environment fault, `64`
+usage — and each can say *could not tell* in its report, gerberdiff as a third diff
+outcome rather than a verdict.
 
-That agreement is the point of recording adjudications at all, so treat an empty list
-as a state to defend rather than a task completed: the next member to ship a verb, or
-the next tool to join, is where it drifts.
+**Two are open**, opened 2026-11-15 when zotgo and wikisync joined: A5, wikisync
+using `2` for usage and `1` for an unreachable wiki (wikisync#66), and A6, zotgo
+using `1` for usage and for an unreachable Zotero and `3` for an unknown command
+(zotgo#144). They are decided together, and the decision may go either way: both
+conform to the table, or the table is revised if two drivers whose engine is a
+service show it is wrong. An empty list is a state to defend, and this is the drift
+it was predicted to come from — the next tool to join.
 
 **Do not "fix" a member to match that page without an issue and a decision entry.**
 The vocabulary follows the tools; the tools do not silently follow the vocabulary.
@@ -438,12 +461,19 @@ frequently constrained by the engine it binds to, and that constraint wins.
 
     partspec, netspec, gerberdiff     Apache-2.0
     prusaslicer-py, slicelab          Apache-2.0
+    wikisync                          Apache-2.0 (from MIT, 2026-11-15)
     orlab                             GPL-2.0 (follows OpenRocket)
+    zotgo                             AGPL-3.0 (not compelled; see below)
 
 Each driver above reaches its engine across a **process boundary**, which does not
 propagate a licence, so nothing is compelled and the choice is free. `orlab` is the
 exception and the reason this section exists: OpenRocket is reached in-process through
 JPype, and GPL-2.0 follows.
+
+zotgo reaches Zotero over HTTP, so nothing compels its AGPL-3.0: it was picked when
+the repository was created. It moves to Apache-2.0 once the outside contributors
+whose merged work arrived under AGPL agree; until then the row above is the
+licence.
 Pick Apache-2.0 where the binding leaves the choice open; take what the engine
 compels where it does not, and record which case applies in the repo's
 `DECISIONS.md`. **There is no org-wide default to apply blindly** — an earlier
