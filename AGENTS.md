@@ -472,8 +472,9 @@ JPype, and GPL-2.0 follows.
 
 zotgo reaches Zotero over HTTP, so nothing compels its AGPL-3.0: it was picked when
 the repository was created. It moves to Apache-2.0 once the outside contributors
-whose merged work arrived under AGPL agree; until then the row above is the
-licence.
+whose merged work arrived under AGPL agree (zotgo#145); until then the row above
+is the licence.
+
 Pick Apache-2.0 where the binding leaves the choice open; take what the engine
 compels where it does not, and record which case applies in the repo's
 `DECISIONS.md`. **There is no org-wide default to apply blindly** — an earlier

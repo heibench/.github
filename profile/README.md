@@ -84,6 +84,6 @@ output.**
 ## The name
 
 heibench was founded on 2026-09-05 as the *Hardware Engineering Integration
-bench*, when every member drove an engineering engine. On 2026-11-15 the scope
+bench*, when every member worked on hardware. On 2026-11-15 the scope
 widened to open tools for scientific and technical work, with zotgo and wikisync
 the first members outside hardware. The name stayed; the expansion was retired.
