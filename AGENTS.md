@@ -78,9 +78,9 @@ artifact poisons the loop upstream of every check that would have caught it.
 
 **How often it is violated is the point.** This exact defect — no state for
 *could not tell*, defaulting to green, to a wrong verdict, or to a signal the
-caller cannot read — has been recorded **fourteen times as of 2026-09-10**, across
-five unrelated domains, written at different times by the same author. Twelve are
-fixed, one is **accepted** -- measured, bounded, and deliberately not fixed,
+caller cannot read — has been recorded **fifteen times as of 2026-09-12**, across
+five unrelated domains, written at different times by the same author. Thirteen
+are fixed, one is **accepted** -- measured, bounded, and deliberately not fixed,
 because every channel that could refuse it refuses correct work too -- and one is
 open. They reach callers through drivers exactly as they do through checkers.
 
