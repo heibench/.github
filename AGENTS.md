@@ -315,6 +315,14 @@ verify with KiCad's reports missing.
 
 zotgo and wikisync joined on 2026-11-15 on codes of their own, and the difference
 is recorded as adjudications A5 and A6 rather than harmonised on arrival (§6.3).
+Both are decided: they conform, and the table did not change.
+
+**For a driver whose engine is a service** — zotgo's Zotero, wikisync's wiki —
+the codes read the same way, with the service in the engine's place. `4` covers a
+service that is not running or not reachable, credentials that are absent, and a
+server error: §2.2's engine that will not start. `1` is the service refusing this
+particular request on its merits, such as an edit conflict or a rejected write. A
+service being down is never a finding about the request.
 
 **`3` is a domain-gated extension, on §6.1's terms.** partspec and slicelab both
 exit `3` for **`empty`**: the run completed, nothing went wrong, and it verified
@@ -361,10 +369,11 @@ outcome rather than a verdict.
 **Two are open**, opened 2026-11-15 when zotgo and wikisync joined: A5, wikisync
 using `2` for usage and `1` for an unreachable wiki (wikisync#66), and A6, zotgo
 using `1` for usage and for an unreachable Zotero and `3` for an unknown command
-(zotgo#144). They are decided together, and the decision may go either way: both
-conform to the table, or the table is revised if two drivers whose engine is a
-service show it is wrong. An empty list is a state to defend, and this is the drift
-it was predicted to come from — the next tool to join.
+(zotgo#144). Both were **decided the same day: conform**. Every measured divergence
+was a case the table already names, so no code was added; the mapping is on each
+issue. They stay open until each tool ships the change, wikisync as 0.7.0 and
+zotgo before 1.0. An empty list is a state to defend, and this is the drift it was
+predicted to come from — the next tool to join.
 
 **Do not "fix" a member to match that page without an issue and a decision entry.**
 The vocabulary follows the tools; the tools do not silently follow the vocabulary.
