@@ -66,8 +66,8 @@ A tool belongs if **all three** hold:
    came from can pick it up and use it.
 
 The second is not a quality preference. It is the condition that makes the first
-worth anything, and it is violated constantly — including fourteen recorded times,
-in five unrelated domains, in this author's own code, twelve now fixed. The
+worth anything, and it is violated constantly — including fifteen recorded times,
+in five unrelated domains, in this author's own code, thirteen now fixed. The
 record is at [heibench.com/silence.html](https://heibench.com/silence.html).
 
 ## What does not
