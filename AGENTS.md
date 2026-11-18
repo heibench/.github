@@ -366,14 +366,25 @@ codes — `0` satisfied, `1` violated, `2` could not tell, `4` environment fault
 usage — and each can say *could not tell* in its report, gerberdiff as a third diff
 outcome rather than a verdict.
 
-**Two are open**, opened 2026-11-15 when zotgo and wikisync joined: A5, wikisync
-using `2` for usage and `1` for an unreachable wiki (wikisync#66), and A6, zotgo
-using `1` for usage and for an unreachable Zotero and `3` for an unknown command
-(zotgo#144). Both were **decided the same day: conform**. Every measured divergence
-was a case the table already names, so no code was added; the mapping is on each
-issue. They stay open until each tool ships the change, wikisync as 0.7.0 and
-zotgo before 1.0. An empty list is a state to defend, and this is the drift it was
-predicted to come from — the next tool to join.
+**Three are open.** Two opened 2026-11-15 when zotgo and wikisync joined: A5,
+wikisync using `2` for usage and `1` for an unreachable wiki (wikisync#66), and
+A6, zotgo using `1` for usage and for an unreachable Zotero and `3` for an unknown
+command (zotgo#144). Both were **decided the same day: conform**. Every measured
+divergence was a case the table already names, so no code was added; the mapping
+is on each issue. They stay open until each tool ships the change, wikisync as
+0.7.0 and zotgo before 1.0. An empty list is a state to defend, and this is the
+drift it was predicted to come from — the next tool to join.
+
+**A7 is orlab, opened and decided 2026-11-18** (orlab#88). `fetch` exits `1` on
+any error: a network failure, a digest mismatch, or a version with no pinned
+digest and no `--sha256`. A bad argument exits `2`, from argparse. On `4c147c1`,
+`python -m orlab --no-such-flag` exits `2` and `python -m orlab fetch 0.0.1`
+exits `1`; the network and digest paths are the same `except` and were not run.
+Decided: conform. A network failure or a digest mismatch is an environment
+fault, `4`. A usage error is `64`, and so is asking `fetch` for an unpinned
+version without `--sha256`, because the invocation is missing something. The
+table did not change. `which` already moved to `4` in orlab `cec7e6a`
+(orlab#87); A7 stays open until orlab ships the rest on orlab#88.
 
 **Do not "fix" a member to match that page without an issue and a decision entry.**
 The vocabulary follows the tools; the tools do not silently follow the vocabulary.
