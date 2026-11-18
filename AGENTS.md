@@ -179,6 +179,27 @@ unsafe direction**.
 Break the thing it checks, watch it go red, put it back. A check whose red state
 you have not personally observed is not a check.
 
+**Confirm the break reached the assertion.** Watching a test go red establishes
+only that *something* changed. Check that the mutation is live — print it, or
+assert the edit applied — and that the test failed on the assertion it is named
+for, not on an import error, a collection error, a fixture or a different
+assertion. In slicelab#23 a scripted break matched nothing and the suite stayed
+green, and a test whose fixture launched the engine before the test took its
+snapshot stayed green with the fix reverted.
+
+**A stand-in falsifies only what the stand-in does.** Where a check exists
+because a real subject behaves surprisingly — a sandbox, a driver, an engine —
+observe its red state against that subject at least once, even when the routine
+test uses a substitute. slicelab#23's stand-in child process honoured `cwd` by
+construction; the Flatpak engine did not, and the suite was green while the
+engine wrote into `$HOME` on every run.
+
+**Parametrize over the environment the check depends on.** An ambient `$HOME`,
+`XDG_*` or `PATH` is where a defect hides, and it hides it from the reproduction
+attempt too. Two of slicelab#23's three false greens were masked by a variable
+set in the operator's own shell, and one reproduction failed for that reason
+until the variable was cleared.
+
 **A skipped test is not a passing test.** partspec's suite once reported
 195 passed / 23 skipped in CI because no runner had OpenSCAD — and those 23 were
 the entire end-to-end path. Never gate a test module at import: that reports as
